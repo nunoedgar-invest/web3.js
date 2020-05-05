@@ -279,5 +279,54 @@ describe('contract.events [ @E2E ]', function() {
         assert.equal(childEvents[1].event, 'Identical');
         assert.equal(typeof childEvents[1].returnValues.childA, 'string');
     });
+
+    it('when event param is a simple string', async function(){
+        const msg = 'simplestring';
+
+        await instance
+            .methods
+            .firesStringEvent(msg)
+            .send({from: accounts[0]});
+
+        const events = await instance.getPastEvents({
+            fromBlock: 0,
+            toBlock: 'latest'
+        });
+
+        assert.equal(events[0].returnValues.str, msg)
+    });
+
+    it('when an invalid utf-8 string is passed in JS as param to emit', async function(){
+        const msg = '�������';
+
+        // Browser does it's own thing
+        const expected = (global.window) ? 'ｿｿｿｿｿｿ' : msg;
+
+        await instance
+            .methods
+            .firesStringEvent(msg)
+            .send({from: accounts[0]});
+
+        const events = await instance.getPastEvents({
+            fromBlock: 0,
+            toBlock: 'latest'
+        });
+
+        assert.equal(expected, events[0].returnValues.str)
+    });
+
+    it('when Solidity emits an invalid utf-8 string', async function(){
+        await instance
+            .methods
+            .firesIllegalUtf8StringEvent()
+            .send({from: accounts[0]});
+
+        const events = await instance.getPastEvents({
+            fromBlock: 0,
+            toBlock: 'latest'
+        });
+
+        assert.equal('�������', events[0].returnValues.str)
+    });
 });
 
