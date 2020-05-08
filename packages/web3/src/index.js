@@ -38,6 +38,7 @@ var Bzz = require('web3-bzz');
 var utils = require('web3-utils');
 
 var Web3 = function Web3() {
+    console.log('hello world')
     var _this = this;
 
     // sets _requestmanager etc
